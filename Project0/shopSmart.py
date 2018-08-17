@@ -28,8 +28,11 @@ def shopSmart(orderList, fruitShops):
         orderList: List of (fruit, numPound) tuples
         fruitShops: List of FruitShops
     """
-    "*** YOUR CODE HERE ***"
-    return None
+    compareShop = lambda a, b: a if (a.getPriceOfOrder(orderList) < b.getPriceOfOrder(orderList)) else b
+
+    bestShop = reduce(compareShop, fruitShops);
+
+    return bestShop
 
 if __name__ == '__main__':
   "This code runs when you invoke the script from the command line"
