@@ -81,18 +81,44 @@ def depthFirstSearch(problem):
 
     To get started, you might want to try some of these simple commands to
     understand the search problem that is being passed in:
-
-    print "Start:", problem.getStartState()
-    print "Is the start a goal?", problem.isGoalState(problem.getStartState())
-    print "Start's successors:", problem.getSuccessors(problem.getStartState())
+    Some notes:
+    - Get start node: problem.getStartState()
+    - Get successor: problem.getSuccessors( tuple (x,y) )
+        -returns array of tuples.isGoalState(problem.getStartState())
+            return 
+        -[((5, 4), 'South', 1), ((4, 5), 'West', 1)]
+        -for each element in array ( (tuple x,y) , action to reach , cost ) 
+    - Check if node is goal: problem.isGoalState( tuple (x,y) )
     """
-    "*** YOUR CODE HERE ***"
-    util.raiseNotDefined()
+    fringe = util.Stack();
+    return GraphSearch(problem, fringe);
 
 def breadthFirstSearch(problem):
     """Search the shallowest nodes in the search tree first."""
-    "*** YOUR CODE HERE ***"
-    util.raiseNotDefined()
+    fringe = util.Queue();
+    return GraphSearch(problem, fringe);
+
+def GraphSearch(problem, fringe):
+    fringe.push( ((problem.getStartState(),'',0), 0) );
+    closed = [];
+
+    while(not fringe.isEmpty()): 
+        node = fringe.pop();
+
+        unique = node[0][0] not in closed;
+        if(unique): 
+            closed.append(node[0][0]);
+            if (problem.isGoalState(node[0][0])): 
+                sol = [node[0][1]];
+                while(node[1]):
+                    sol.insert(0, node[1][0][1]);
+                    node = node[1];
+                del sol[0];
+                return sol;
+            map(lambda x: fringe.push( (x, node) ), problem.getSuccessors(node[0][0]));
+
+    return [];
+
 
 def uniformCostSearch(problem):
     """Search the node of least total cost first."""
