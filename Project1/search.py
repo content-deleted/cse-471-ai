@@ -122,10 +122,29 @@ def GraphSearch(problem, fringe):
 
 def uniformCostSearch(problem):
     """Search the node of least total cost first."""
-    "*** YOUR CODE HERE ***"
-    util.raiseNotDefined()
+    fringe = util.PriorityQueue();
 
-def nullHeuristic(state, problem=None):
+    fringe.push( ((problem.getStartState(),'',0), 0) , 0 );
+    closed = [];
+
+    while(not fringe.isEmpty()): 
+        node = fringe.pop();
+
+        unique = node[0][0] not in closed;
+        if(unique): 
+            closed.append(node[0][0]);
+            if (problem.isGoalState(node[0][0])): 
+                sol = [node[0][1]];
+                while(node[1]):
+                    sol.insert(0, node[1][0][1]);
+                    node = node[1];
+                del sol[0];
+                return sol;
+            map(lambda x: fringe.push( (x, node), x[2] ), problem.getSuccessors(node[0][0]));
+
+    return [];
+
+def nullHeuristic(state, problem):
     """
     A heuristic function estimates the cost from the current state to the nearest
     goal in the provided SearchProblem.  This heuristic is trivial.
@@ -134,8 +153,27 @@ def nullHeuristic(state, problem=None):
 
 def aStarSearch(problem, heuristic=nullHeuristic):
     """Search the node that has the lowest combined cost and heuristic first."""
-    "*** YOUR CODE HERE ***"
-    util.raiseNotDefined()
+    fringe = util.PriorityQueue();
+
+    fringe.push( ((problem.getStartState(),'',0), 0) , 0 );
+    closed = [];
+
+    while(not fringe.isEmpty()): 
+        node = fringe.pop();
+
+        unique = node[0][0] not in closed;
+        if(unique): 
+            closed.append(node[0][0]);
+            if (problem.isGoalState(node[0][0])): 
+                sol = [node[0][1]];
+                while(node[1]):
+                    sol.insert(0, node[1][0][1]);
+                    node = node[1];
+                del sol[0];
+                return sol;
+            map(lambda x: fringe.push( (x, node), heuristic(node[0][0], problem) ), problem.getSuccessors(node[0][0]));
+
+    return [];
 
 
 # Abbreviations
