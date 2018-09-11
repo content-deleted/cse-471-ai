@@ -124,12 +124,11 @@ def uniformCostSearch(problem):
     """Search the node of least total cost first."""
     fringe = util.PriorityQueue();
 
-    fringe.push( ((problem.getStartState(),'',0), 0) , 0 );
+    fringe.push( ((problem.getStartState(),'',0), 0 , 0) , 0 );
     closed = [];
 
     while(not fringe.isEmpty()): 
         node = fringe.pop();
-
         unique = node[0][0] not in closed;
         if(unique): 
             closed.append(node[0][0]);
@@ -140,7 +139,7 @@ def uniformCostSearch(problem):
                     node = node[1];
                 del sol[0];
                 return sol;
-            map(lambda x: fringe.push( (x, node), x[2] ), problem.getSuccessors(node[0][0]));
+            map(lambda x: fringe.push( (x, node, node[2] + x[2]), (x[2] + node[2]) ), problem.getSuccessors(node[0][0]));
 
     return [];
 
@@ -155,7 +154,7 @@ def aStarSearch(problem, heuristic=nullHeuristic):
     """Search the node that has the lowest combined cost and heuristic first."""
     fringe = util.PriorityQueue();
 
-    fringe.push( ((problem.getStartState(),'',0), 0) , 0 );
+    fringe.push( ((problem.getStartState(),'',0), 0 , 0) , 0 );
     closed = [];
 
     while(not fringe.isEmpty()): 
@@ -164,6 +163,7 @@ def aStarSearch(problem, heuristic=nullHeuristic):
         unique = node[0][0] not in closed;
         if(unique): 
             closed.append(node[0][0]);
+
             if (problem.isGoalState(node[0][0])): 
                 sol = [node[0][1]];
                 while(node[1]):
@@ -171,7 +171,9 @@ def aStarSearch(problem, heuristic=nullHeuristic):
                     node = node[1];
                 del sol[0];
                 return sol;
-            map(lambda x: fringe.push( (x, node), heuristic(node[0][0], problem) ), problem.getSuccessors(node[0][0]));
+            suc = problem.getSuccessors(node[0][0]);
+            
+            map(lambda x: fringe.push( (x, node, node[2] + x[2]), heuristic(x[0], problem ) + (x[2] + node[2]) ), suc);
 
     return [];
 

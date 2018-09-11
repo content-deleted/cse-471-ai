@@ -301,6 +301,7 @@ class CornersProblem(search.SearchProblem):
         """
         Returns whether this search state is a goal state of the problem.
         """
+
         if(state in self.cornerFruit):
         	self.cornerFruit.remove(state);
         	if(not self.cornerFruit): return True;
@@ -330,9 +331,8 @@ class CornersProblem(search.SearchProblem):
             nextx, nexty = int(x + dx), int(y + dy);
             if (not self.walls[nextx][nexty]):
                 nextState = (nextx, nexty);
-                cost = 1;
+                cost = 0 if nextState not in self.corners else -1;
                 successors.append( ( nextState, action, cost) );
-
 
         self._expanded += 1 # DO NOT CHANGE
         return successors
@@ -367,8 +367,11 @@ def cornersHeuristic(state, problem):
     corners = problem.corners # These are the corner coordinates
     walls = problem.walls # These are the walls of the maze, as a Grid (game.py)
 
-    "*** YOUR CODE HERE ***"
-    return 0 # Default to trivial solution
+    if(state in walls): return 999999;
+
+    if(state in corners): return 0;
+
+    return 1 # Default to trivial solution
 
 class AStarCornersAgent(SearchAgent):
     "A SearchAgent for FoodSearchProblem using A* and your foodHeuristic"
