@@ -295,16 +295,14 @@ class CornersProblem(search.SearchProblem):
         Returns the start state (in your state space, not the full Pacman state
         space)
         """
-        return self.startingPosition;
+        return ((self.startingPosition), self.corners);
 
     def isGoalState(self, state):
         """
         Returns whether this search state is a goal state of the problem.
         """
 
-        if(state in self.cornerFruit):
-        	self.cornerFruit.remove(state);
-        	if(not self.cornerFruit): return True;
+        if(not state[1]): return True;
         return False;
 
     def getSuccessors(self, state):
@@ -326,12 +324,18 @@ class CornersProblem(search.SearchProblem):
             #   nextx, nexty = int(x + dx), int(y + dy)
             #   hitsWall = self.walls[nextx][nexty]
         for action in [Directions.NORTH, Directions.SOUTH, Directions.EAST, Directions.WEST]:
-            x,y = state;
+            pos,c = state;
+            x,y = pos;
             dx, dy = Actions.directionToVector(action);
             nextx, nexty = int(x + dx), int(y + dy);
+
             if (not self.walls[nextx][nexty]):
-                nextState = (nextx, nexty);
-                cost = 0 if nextState not in self.corners else -1;
+            	nextPos = (nextx, nexty);
+            	corn = map(lambda x: x, c);
+            	if(nextPos in corn): 
+            		corn.remove(nextPos);
+                nextState = (nextPos, corn);
+                cost = 1;
                 successors.append( ( nextState, action, cost) );
 
         self._expanded += 1 # DO NOT CHANGE
@@ -366,12 +370,21 @@ def cornersHeuristic(state, problem):
     """
     corners = problem.corners # These are the corner coordinates
     walls = problem.walls # These are the walls of the maze, as a Grid (game.py)
+    pos = state[0];
 
-    if(state in walls): return 999999;
+    """ Account for walls """
+    if(pos in walls): return 999999;
 
-    if(state in corners): return 0;
+    dist = 0;
 
-    return 1 # Default to trivial solution
+    for corner in state[1]:
+    	x,y = pos;
+    	gx, gy = corner;
+    	dx = abs(x - gx);
+    	dy = abs(y - gy);
+    	dist += (dx+dy);
+    print dist;
+    return dist;
 
 class AStarCornersAgent(SearchAgent):
     "A SearchAgent for FoodSearchProblem using A* and your foodHeuristic"
