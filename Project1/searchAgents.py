@@ -373,18 +373,23 @@ def cornersHeuristic(state, problem):
     pos = state[0];
 
     """ Account for walls """
-    if(pos in walls): return 999999;
+    #if(pos in walls): return 999999;
 
     dist = 0;
+    x,y = pos;
+    activeCorners = state[1];
 
-    for corner in state[1]:
-    	x,y = pos;
-    	gx, gy = corner;
-    	dx = abs(x - gx);
-    	dy = abs(y - gy);
-    	dist += (dx+dy);
-    print dist;
-    return dist;
+    if(not activeCorners): return 0;
+    else:
+        dist = 9999999;
+        for corner in activeCorners: 
+            gx, gy = corner;
+            dx = abs(x - gx);
+            dy = abs(y - gy);
+            cur = (dx+dy);
+            if (cur < dist): dist = cur;
+        
+        return dist;
 
 class AStarCornersAgent(SearchAgent):
     "A SearchAgent for FoodSearchProblem using A* and your foodHeuristic"
@@ -427,7 +432,8 @@ class FoodSearchProblem:
                 nextFood[nextx][nexty] = False
                 successors.append( ( ((nextx, nexty), nextFood), direction, 1) )
         return successors
-
+    
+    
     def getCostOfActions(self, actions):
         """Returns the cost of a particular sequence of actions.  If those actions
         include an illegal move, return 999999"""
@@ -477,8 +483,16 @@ def foodHeuristic(state, problem):
     problem.heuristicInfo['wallCount']
     """
     position, foodGrid = state
-    "*** YOUR CODE HERE ***"
-    return 0
+    
+    fruitList = foodGrid.asList(True);
+    
+    if(not fruitList): return 0;
+    else: 
+        Fx,Fy = fruitList[0];
+        x,y = position;
+        dx = abs(x - Fx);
+        dy = abs(y - Fy);
+        return (dx+dy);
 
 class ClosestDotSearchAgent(SearchAgent):
     "Search for all food using a sequence of searches"
@@ -504,12 +518,103 @@ class ClosestDotSearchAgent(SearchAgent):
         """
         # Here are some useful elements of the startState
         startPosition = gameState.getPacmanPosition()
+        print "\nSTART: "
+        print startPosition;
         food = gameState.getFood()
         walls = gameState.getWalls()
         problem = AnyFoodSearchProblem(gameState)
+        height = len(walls[0]) - 1;
 
-        "*** YOUR CODE HERE ***"
-        util.raiseNotDefined()
+        if(problem.isGoalState(startPosition)): return [];
+
+        fruitList = food.asList(True);
+
+        dist = 9999999;
+        nearest = (0,0);
+        x,y = startPosition;
+        
+        return search.breadthFirstSearch(problem);
+
+        """
+
+        for fruit in fruitList: 
+            Fx, Fy = fruit;
+            dx = abs(x - Fx);
+            dy = abs(y - Fy);
+            curDist = (dx+dy);
+            if (curDist < dist): 
+                dist = curDist;
+                nearest = fruit;
+        
+        Fx, Fy = nearest;
+        dx = abs(x - Fx);
+        dy = abs(y - Fy);
+        
+        cur = (x,y);
+        moves = [];
+        closed = [];
+
+        print "GOAL"
+        print nearest;
+        print "Dist:"
+        print dist;
+        #exit();
+
+        while(not problem.isGoalState(cur)):
+            nextDir = Actions.vectorToDirection((dx, dy));
+            
+            deltaX, deltaY = Actions.directionToVector(nextDir);
+
+            nextX = int(cur[0] + deltaX);
+            nextY = int(cur[1] + deltaY);
+            #print "\n"
+            #print nextDir 
+            #print nextY
+
+            #print (nextX,nextY)
+            #print walls[nextX][height - nextY]
+
+            if (not walls[nextX][height - nextY]):
+                cur = (nextX, nextY);
+                moves.append(nextDir);
+                closed.append(cur);
+
+            else:
+                possible = Actions.getLegalNeighbors(cur, walls);
+                #print "problem"
+                boolChecked = False;
+
+                directions = [(cur[0]+1, cur[1]), (cur[0]-1, cur[1]), (cur[0], cur[1] + 1), (cur[0], cur[1]- 1)];
+                for act in directions:
+                    if(not walls[act[0]][height - act[1]]):
+                        nextX , nextY = act;
+                        #print "checking..."
+                        #print (nextX, nextY);
+                        #print walls[nextX][height - nextY];
+                        if( (act not in closed) ):
+                            boolChecked = True;
+                            print "resolved"
+                            break;
+                
+                if(not boolChecked): 
+                    #print "NOT RESOLVED"
+                    closed = [cur];
+                    continue;
+
+                deltaX = nextX - cur[0];
+                deltaY = nextY - cur[1];
+                print "deltaX: deltaY:"
+                print (deltaX, deltaY);
+                nextDir = Actions.vectorToDirection( (deltaX, deltaY) );
+                print nextDir;
+                print "\n"
+                cur = (nextX, nextY);
+                closed.append(cur);
+                moves.append(nextDir);
+
+        print moves;
+        return moves;
+        """
 
 class AnyFoodSearchProblem(PositionSearchProblem):
     """
@@ -544,8 +649,36 @@ class AnyFoodSearchProblem(PositionSearchProblem):
         """
         x,y = state
 
-        "*** YOUR CODE HERE ***"
-        util.raiseNotDefined()
+        fruitList = self.food.asList(True);
+        
+        return (state in fruitList);
+    
+    def getStartState(self):
+        return self.startState
+
+    def getSuccessors(self, state):
+        """
+        Returns successor states, the actions they require, and a cost of 1.
+
+         As noted in search.py:
+             For a given state, this should return a list of triples,
+         (successor, action, stepCost), where 'successor' is a
+         successor to the current state, 'action' is the action
+         required to get there, and 'stepCost' is the incremental
+         cost of expanding to that successor
+        """
+
+        successors = []
+        for action in [Directions.NORTH, Directions.SOUTH, Directions.EAST, Directions.WEST]:
+            x,y = state
+            dx, dy = Actions.directionToVector(action)
+            nextx, nexty = int(x + dx), int(y + dy)
+            if not self.walls[nextx][nexty]:
+                nextState = (nextx, nexty)
+                cost = self.costFn(nextState)
+                successors.append( ( nextState, action, cost) )
+
+        return successors
 
 def mazeDistance(point1, point2, gameState):
     """
@@ -557,6 +690,7 @@ def mazeDistance(point1, point2, gameState):
 
     This might be a useful helper function for your ApproximateSearchAgent.
     """
+
     x1, y1 = point1
     x2, y2 = point2
     walls = gameState.getWalls()
