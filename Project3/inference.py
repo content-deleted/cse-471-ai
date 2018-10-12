@@ -161,17 +161,12 @@ class ExactInference(InferenceModule):
         
         for p in self.legalPositions:
             trueDistance = util.manhattanDistance(p, pacmanPosition)
-            if not emissionModel[trueDistance] > 0:
-                allPossible[p] = 0.5
-            else:
-                allPossible[p] = 1
-
-        #allPossible.normalize()
-
-        for p in self.beliefs: 
-          allPossible[p] = self.beliefs[p] * allPossible[p]
-
+            allPossible[p] = emissionModel[trueDistance] * self.beliefs[p]
         
+        # In jail
+        if(noisyDistance == None):
+            allPossible[(1,1)] = 1
+
         "*** END YOUR CODE HERE ***"
 
         allPossible.normalize()
