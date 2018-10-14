@@ -40,7 +40,7 @@ class KeyboardInference(inference.InferenceModule):
     """
     def initializeUniformly(self, gameState):
         "Begin with a uniform distribution over ghost positions."
-        self.beliefs = util.Counter()
+        self.beliefs = util.Counter() 
         for p in self.legalPositions: self.beliefs[p] = 1.0
         self.beliefs.normalize()
 
