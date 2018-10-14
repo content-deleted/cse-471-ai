@@ -156,11 +156,59 @@ class GreedyBustersAgent(BustersAgent):
              indices into this list should be 1 less than indices into the
              gameState.getLivingGhosts() list.
         """
+
         pacmanPosition = gameState.getPacmanPosition()
         legal = [a for a in gameState.getLegalPacmanActions()]
         livingGhosts = gameState.getLivingGhosts()
-        livingGhostPositionDistributions = \
-            [beliefs for i, beliefs in enumerate(self.ghostBeliefs)
-             if livingGhosts[i+1]]
-        "*** YOUR CODE HERE ***"
-        util.raiseNotDefined()
+
+        ghostPos = list()
+        # get likely pos of each ghost
+        for i, beliefs in enumerate(self.ghostBeliefs):
+            if livingGhosts[i+1]:
+                highestProb = 0
+                bestPos = (0,0)
+                for pos, prob in beliefs.items():
+                    if(prob > highestProb):
+                        bestPos = pos
+                        highestProb = prob
+                ghostPos.append(bestPos)
+        
+        # get nearest ghost
+        dist = 9999999
+        goal = pacmanPosition
+        for i, pos in enumerate(ghostPos):
+            newDist = self.distancer.getDistance(pos, pacmanPosition)
+            if(newDist < dist):
+                dist = newDist
+                goal = pos
+        
+        # get best action
+        action = legal[1]
+        dist = 9999999
+        for currentAction in legal:
+            successorPosition = Actions.getSuccessor(pacmanPosition, currentAction)
+            newDist = self.distancer.getDistance(successorPosition, goal)
+            if(newDist <= dist):
+                dist = newDist
+                action = currentAction
+
+        return action
+
+        #short sighed strategy   
+        """"       
+        for i, beliefs in enumerate(self.ghostBeliefs):
+            if livingGhosts[i]:
+                livingGhostPositionDistributions = util.Counter()
+                for pos, prob in beliefs.items():
+                    livingGhostPositionDistributions[pos] = prob
+
+        action = legal[1]
+        value = 0
+
+        for currentAction in legal:
+            successorPosition = Actions.getSuccessor(pacmanPosition, currentAction)
+            if(livingGhostPositionDistributions[successorPosition] > value):
+                action = currentAction
+        return action
+        """
+        

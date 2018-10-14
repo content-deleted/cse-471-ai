@@ -147,16 +147,7 @@ class ExactInference(InferenceModule):
         noisyDistance = observation
         emissionModel = busters.getObservationDistribution(noisyDistance)
         pacmanPosition = gameState.getPacmanPosition()
-
-        "*** YOUR CODE HERE ***"
-        
-        #print "noisy Distance " , noisyDistance 
-        #print "emissionModel" , emissionModel
-        #print "pacmanPosition" , pacmanPosition
-
-        # Replace this code with a correct observation update
-        # Be sure to handle the "jail" edge case where the ghost is eaten
-        # and noisyDistance is None
+ 
         allPossible = util.Counter()
         
         for p in self.legalPositions:
@@ -165,10 +156,8 @@ class ExactInference(InferenceModule):
         
         # In jail
         if(noisyDistance == None):
-            allPossible[(1,1)] = 1
-
-        "*** END YOUR CODE HERE ***"
-
+            allPossible[self.getJailPosition()] = 1
+        
         allPossible.normalize()
         self.beliefs = allPossible
 
