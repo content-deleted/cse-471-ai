@@ -303,11 +303,31 @@ class ParticleFilter(InferenceModule):
         You may also want to use util.manhattanDistance to calculate the
         distance between a particle and Pacman's position.
         """
+
         noisyDistance = observation
         emissionModel = busters.getObservationDistribution(noisyDistance)
         pacmanPosition = gameState.getPacmanPosition()
-        "*** YOUR CODE HERE ***"
-        util.raiseNotDefined()
+
+        allPossible = util.Counter()
+        
+        beliefs = self.getBeliefDistribution()
+        
+        for p in self.legalPositions:
+            trueDistance = util.manhattanDistance(p, pacmanPosition)
+            allPossible[p] = emissionModel[trueDistance] * beliefs[p]
+        
+        # In jail
+        if(noisyDistance == None):
+            allPossible[self.getJailPosition()] = 1
+        
+        allPossible.normalize()
+        
+        # check if particles have weight zero and resample uniform
+        if allPossible.totalCount() == 0:
+            self.initializeUniformly(gameState)
+        else:
+            for i, p in enumerate(self.particles):
+                self.particles[i] = util.sample(allPossible)
 
     def elapseTime(self, gameState):
         """
@@ -323,6 +343,14 @@ class ParticleFilter(InferenceModule):
         util.sample(Counter object) is a helper method to generate a sample from
         a belief distribution.
         """
+        newParticles = list()
+
+        for pos in self.particles:
+            newPosDist = self.getPositionDistribution(self.setGhostPosition(gameState, pos))
+            newParticles.append(util.sample(newPosDist))
+
+        # add back
+        self.particles = newParticles
         
 
     def getBeliefDistribution(self):
