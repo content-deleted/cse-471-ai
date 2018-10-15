@@ -259,7 +259,22 @@ class ParticleFilter(InferenceModule):
         Storing your particles as a Counter (where there could be an associated
         weight with each position) is incorrect and may produce errors.
         """
-        "*** YOUR CODE HERE ***"
+        
+        #UniformDist = util.Counter()
+        #for i, pos in enumerate(self.legalPositions):
+            #UniformDist[i] = 1
+        #UniformDist.normalize()
+        #print UniformDist
+        #samples = util.nSample(UniformDist,self.legalPositions, self.numParticles)
+        count = len(self.legalPositions)
+        part = self.numParticles / count
+        samples = list()
+        for i in range(0, count):
+            for j in range(0, part):
+                samples.append(self.legalPositions[i])
+
+
+        self.particles = samples
 
     def observe(self, observation, gameState):
         """
@@ -308,8 +323,7 @@ class ParticleFilter(InferenceModule):
         util.sample(Counter object) is a helper method to generate a sample from
         a belief distribution.
         """
-        "*** YOUR CODE HERE ***"
-        util.raiseNotDefined()
+        
 
     def getBeliefDistribution(self):
         """
@@ -318,8 +332,14 @@ class ParticleFilter(InferenceModule):
         essentially converts a list of particles into a belief distribution (a
         Counter object)
         """
-        "*** YOUR CODE HERE ***"
-        util.raiseNotDefined()
+        #counter object
+        belief = util.Counter()
+        for sample in self.particles:
+            belief[sample] += 1
+        belief.normalize()
+        
+        return belief
+
 
 class MarginalInference(InferenceModule):
     """
