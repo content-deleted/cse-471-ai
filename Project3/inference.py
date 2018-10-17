@@ -260,19 +260,12 @@ class ParticleFilter(InferenceModule):
         weight with each position) is incorrect and may produce errors.
         """
         
-        #UniformDist = util.Counter()
-        #for i, pos in enumerate(self.legalPositions):
-            #UniformDist[i] = 1
-        #UniformDist.normalize()
-        #print UniformDist
-        #samples = util.nSample(UniformDist,self.legalPositions, self.numParticles)
         count = len(self.legalPositions)
         part = self.numParticles / count
         samples = list()
         for i in range(0, count):
             for j in range(0, part):
                 samples.append(self.legalPositions[i])
-
 
         self.particles = samples
 
@@ -439,7 +432,33 @@ class JointParticleFilter:
         Storing your particles as a Counter (where there could be an associated
         weight with each position) is incorrect and may produce errors.
         """
-        "*** YOUR CODE HERE ***"
+
+        # our sample space is the combination of each ghost at each position 
+       # itertools.product()
+
+        #for i, agent in enumerate(self.ghostAgents):
+        
+        counterObject = util.Counter()
+        
+        for pos in self.legalPositions:
+            counterObject[pos] = 1
+
+        counterObject.normalize()
+
+        print "test: ", util.sample(counterObject)
+        print map(lambda: util.sample(counterObject), self.ghostAgents )
+        print len(self.ghostAgents)
+        test = [1,2]
+        samples = list()
+        #if len(self.ghostAgents) > 0:
+        for i in range(0, self.numParticles):
+            samples.append(tuple(map(lambda _: util.sample(counterObject), self.ghostAgents)))
+        #else:
+         #   samples.append((1,1))
+        #[util.sample(counterObject) for i in range(len(self.ghostAgents))]
+        self.particles = samples
+
+        #print samples
 
     def addGhostAgent(self, agent):
         """
@@ -553,8 +572,13 @@ class JointParticleFilter:
         self.particles = newParticles
 
     def getBeliefDistribution(self):
-        "*** YOUR CODE HERE ***"
-        util.raiseNotDefined()
+       #counter object
+        belief = util.Counter()
+        for sample in self.particles:
+            belief[sample] += 1
+        belief.normalize()
+
+        return belief
 
 # One JointInference module is shared globally across instances of MarginalInference
 jointInference = JointParticleFilter()
