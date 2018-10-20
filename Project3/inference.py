@@ -521,34 +521,69 @@ class JointParticleFilter:
         beliefs = self.getBeliefDistribution()
         allPossible = util.Counter()
 
+        ghostFlag = [False for g in xrange(self.numGhosts)]
+        
+        #newProbSet = list(self.probSpace)
+        testJailShit = False
+        for i in xrange(self.numGhosts): 
+            if(noisyDistances[i] == None):
+                ghostFlag[i] = True
+                testJailShit = True
+        ghostFlagPrior = []
 
-                #getParticleWithGhostInJail([],[])
+        if(testJailShit):
+            ghostFlagPrior = [False for g in xrange(self.numGhosts)]
+            # Find out if ghost already captured
+            for i, flag in enumerate(ghostFlag):
+                if flag:
+                    for b in beliefs.keys():
+                        if b[i] == self.getJailPosition(i):
+                            ghostFlagPrior[i] = True
 
-        # init
-        for posSet in self.probSpace:
-            allPossible[tuple(posSet)] =  1
-
-        for posSet in self.probSpace:
+            tempSpace = list() 
+            
             for i in xrange(self.numGhosts): 
-                emissionModel = emissionModels[i]
-                noisyDistance = noisyDistances[i]
-                if(noisyDistance == None):
-                    print "this is the problem"
-                    allPossible[tuple(posSet)] = 1
+                if ghostFlagPrior[i]:
+                    jailPos = self.getJailPosition(i)
+                    for posSet in self.probSpace:
+                        temp = list(posSet)
+                        temp[i] = jailPos
+                        if temp not in tempSpace:
+                            tempSpace.append(temp)
+
+        else:
+            tempSpace = list(self.probSpace)
+        
+        for posSet in beliefs.keys():
+            allPossible[tuple(posSet)] = beliefs[tuple(posSet)]
+
+            for i in xrange(self.numGhosts): 
+                if ghostFlag[i]:
                     continue
 
+                emissionModel = emissionModels[i]
+
                 trueDistance = util.manhattanDistance(posSet[i], pacmanPosition)
-                
-                allPossible[tuple(posSet)] *= emissionModel[trueDistance]
-            allPossible[tuple(posSet)] *= beliefs[tuple(posSet)]
+                allPossible[tuple(posSet)] *= emissionModel[trueDistance] #* beliefs[tuple(posSet)]
         
         # check if particles have weight zero and resample uniform
         if allPossible.totalCount() == 0:
             self.initializeParticles()
         else:
             allPossible.normalize()
+            tempPart = list()
+            #for i in xrange(len(self.particles)):
+                #self.particles[i] = util.sample(allPossible)
+            for part in self.particles:
+                tempPart.append(util.sample(allPossible))
+            self.particles = tempPart
+
+        # check flag
+        if(testJailShit):
             for i, p in enumerate(self.particles):
-                self.particles[i] = util.sample(allPossible)
+                for j in xrange(self.numGhosts):
+                    if(ghostFlag[j]):
+                        self.particles[i] = self.getParticleWithGhostInJail(self.particles[i], j)
         """
         noisyDistance = observation
         emissionModel = busters.getObservationDistribution(noisyDistance)
