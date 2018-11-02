@@ -49,22 +49,8 @@ class ValueIterationAgent(ValueEstimationAgent):
         # if the state is a terminal state we want to set its V to it's exit reward
         # else we init to zero 
         for state in self.mdp.getStates():
-            # mdp.getReward(state) if mdp.isTerminal(state) else 0
             self.values[state] = 0
-        
-        '''
-        for state in self.mdp.getStates():
-                maxA = 0
-                for action in self.mdp.getPossibleActions(state):
-                    state2AndProbs = self.mdp.getTransitionStatesAndProbs(state, action)
 
-                    for stateAndProb in state2AndProbs:
-                        #print "state: ", state, " action: ", action, "next state: ", stateAndProb[0]
-                        reward = self.mdp.getReward(state, action, stateAndProb[0])
-                        self.values[state] = self.discount * ( reward * stateAndProb[1] )
-                        #print " REWARD:", reward
-        '''
-        
         for num in xrange(0, self.iterations):
             newValues = util.Counter()
             for state in self.mdp.getStates():
@@ -110,9 +96,13 @@ class ValueIterationAgent(ValueEstimationAgent):
         """
         # Check for terminal state
         if self.mdp.isTerminal(state): return None
-            
+        ourSums = util.Counter()
+        for action in self.mdp.getPossibleActions(state):
+            stateProbSum = self.computeQValueFromValues(state, action)
+            ourSums[action] = stateProbSum
+       
         # return the action with the highest V
-        return self.values.argMax()
+        return ourSums.argMax()
 
     def getPolicy(self, state):
         return self.computeActionFromValues(state)
