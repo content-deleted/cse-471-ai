@@ -64,7 +64,7 @@ class QLearningAgent(ReinforcementAgent):
         if(len(actions) == 0): return None
         stateActions = list()
         for action in actions: 
-            stateActions.append( self.qValues[(state,action)] )
+            stateActions.append( self.getQValue(state,action) )
 
         stateMax =  max(stateActions)
 
@@ -78,7 +78,7 @@ class QLearningAgent(ReinforcementAgent):
         """
         nextQ = util.Counter()
         for nextAction in self.getLegalActions(state):
-            nextQ[nextAction] = self.qValues[(state, nextAction)]
+            nextQ[nextAction] = self.getQValue(state, nextAction)
 
         return nextQ.argMax()
         # Break ties randomly with random.choice()
@@ -118,10 +118,10 @@ class QLearningAgent(ReinforcementAgent):
         if(len(actions)):
             nextQ = list()
             for nextAction in self.getLegalActions(nextState):
-                nextQ.append( self.qValues[(nextState, nextAction)] )
+                nextQ.append( self.getQValue(nextState, nextAction) )
             nextQMax = max(nextQ)
             
-        newQVal = self.qValues[(state, action)] + self.alpha * ( reward + self.discount * nextQMax - self.qValues[(state, action)])
+        newQVal = self.getQValue(state, action) + self.alpha * ( reward + self.discount * nextQMax - self.getQValue(state, action) )
 
         self.qValues[(state,action)] = newQVal
 
@@ -185,15 +185,37 @@ class ApproximateQAgent(PacmanQAgent):
           Should return Q(state,action) = w * featureVector
           where * is the dotProduct operator
         """
-        "*** YOUR CODE HERE ***"
-        util.raiseNotDefined()
+        weights = self.getWeights() 
+        feats = self.featExtractor.getFeatures(state, action)
+        
+        values = 0
+        for feat in feats:
+            values += feats[feat] * weights[feat]
+
+        return values
 
     def update(self, state, action, nextState, reward):
         """
            Should update your weights based on transition
         """
-        "*** YOUR CODE HERE ***"
-        util.raiseNotDefined()
+
+        nextQMax = 0
+        
+        nextActions = self.getLegalActions(nextState)
+        if(len(nextActions)):
+            nextQ = list()
+            for nextAction in self.getLegalActions(nextState):
+                nextQ.append( self.getQValue( nextState, nextAction) )
+            nextQMax = max(nextQ)
+        #print len(nextActions)
+        #nextQMax = self.computeValueFromQValues(state)
+
+        feats = self.featExtractor.getFeatures(state, action)
+
+        qvalue =  self.getQValue(state, action)
+        for feat in feats:
+            difference = (reward + self.discount * nextQMax) - qvalue
+            self.weights[feat] = self.weights[feat] + self.alpha * difference * feats[feat]
 
     def final(self, state):
         "Called at the end of each game."
@@ -203,5 +225,5 @@ class ApproximateQAgent(PacmanQAgent):
         # did we finish training?
         if self.episodesSoFar == self.numTraining:
             # you might want to print your weights here for debugging
-            "*** YOUR CODE HERE ***"
+            print self.getWeights()
             pass
