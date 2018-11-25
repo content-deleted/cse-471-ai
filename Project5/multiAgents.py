@@ -70,6 +70,7 @@ class ReflexAgent(Agent):
         successorGameState = currentGameState.generatePacmanSuccessor(action)
         newPos = successorGameState.getPacmanPosition()
         newFood = successorGameState.getFood()
+        curFood = currentGameState.getFood()
         newGhostStates = successorGameState.getGhostStates()
         newScaredTimes = [ghostState.scaredTimer for ghostState in newGhostStates]
 
@@ -80,18 +81,18 @@ class ReflexAgent(Agent):
 
         scoreDiff = successorGameState.getScore() - currentGameState.getScore()
 
-
-        if(newFood[newPos[0]][newPos[1]]):
+        if(curFood[newPos[0]][newPos[1]]):
             closestFruitDistance = 0.5
         else:
             closestFruitDistance = 99999
-            for pos in newFood.asList():
+            for pos in curFood.asList():
                 if(newFood[pos[0]][pos[1]]):
                     dist = util.manhattanDistance(pos, newPos)
                     if dist < closestFruitDistance: closestFruitDistance = dist
-
-                        
-        return -1000 if (closestGhostDistance == 0) else scoreDiff - 10 / (closestGhostDistance * closestGhostDistance) + 5 / closestFruitDistance
+        
+        scoreEval = -10.0 / (closestGhostDistance * closestGhostDistance) + 5.0 / closestFruitDistance
+        
+        return -1000 if (closestGhostDistance <= 2) else scoreEval
 
 def scoreEvaluationFunction(currentGameState):
     """
@@ -145,9 +146,37 @@ class MinimaxAgent(MultiAgentSearchAgent):
           gameState.getNumAgents():
             Returns the total number of agents in the game
         """
-        "*** YOUR CODE HERE ***"
-        util.raiseNotDefined()
+        
+        def minimax(currentDepth, currentGameState, agentNum):
+            if(currentDepth == self.depth): return self.evaluationFunction(currentGameState)
+            
+            actions = currentGameState.getLegalActions(agentNum)
+            newAgentNum = agentNum + 1
+            
+            if(newAgentNum >= currentGameState.getNumAgents()): 
+                newAgentNum = 0
+                currentDepth+=1
+            
+            successors = map(lambda action: minimax(currentDepth, currentGameState.generateSuccessor(agentNum, action),newAgentNum), actions)
 
+            if not successors:
+                return self.evaluationFunction(currentGameState)
+            else:
+                return max(successors) if agentNum == 0 else min(successors)
+    
+        #if(self.depth != 0):
+        actions = gameState.getLegalActions(0)
+        bestAction = None
+        Max = -10000000
+        startingDepth = 0
+        for action in actions:
+            v = minimax(startingDepth,  gameState.generateSuccessor(0, action), 1)
+            if(v > Max):
+                Max = v
+                bestAction = action
+        return bestAction
+            
+        
 class AlphaBetaAgent(MultiAgentSearchAgent):
     """
       Your minimax agent with alpha-beta pruning (question 3)
