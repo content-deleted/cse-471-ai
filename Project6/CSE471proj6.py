@@ -19,7 +19,13 @@ labels = tf.placeholder(dtype = tf.float32, shape = [None,n_classes]) #placehold
 '''
 Define your Hidden Layers Here
 '''
+prev_hidden_layer = None
+# Use Relu activation function
 
+
+'''
+-------------------------
+'''
 
 logits  = tf.contrib.layers.fully_connected(prev_hidden_layer , n_classes, activation_fn = None)
 softmax_op = tf.nn.softmax(logits)
@@ -52,7 +58,7 @@ with tf.Session() as sess:
 			'''
 			train_loss = None
 			train_acc = None
-			print("Epoch : {}, Training Loss : {}, Training Accuracy : {}".format(ii,train_loss,test_loss)
+			print("Epoch : {}, Training Loss : {}, Training Accuracy : {}").format(ii,train_loss,test_loss)
 			train_losses.append(train_loss)
 			test_losses.append(train_acc)
 
@@ -61,3 +67,16 @@ test_accuracy = None # Get the test accuracy by evaluating the accuracy tensor w
 '''
 YOUR PLOTTING CODE HERE
 '''
+
+epochs = range(1, len(test_accuracy) + 1)
+
+# "bo" is for "blue dot"
+plt.plot(epochs, train_losses, 'bo', label='Training loss')
+# b is for "solid blue line"
+plt.plot(epochs, test_losses, 'b', label='Test loss')
+plt.title('Training and test loss')
+plt.xlabel('Epochs')
+plt.ylabel('Loss')
+plt.legend()
+
+plt.show()
