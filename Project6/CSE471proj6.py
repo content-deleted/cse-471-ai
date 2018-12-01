@@ -9,7 +9,7 @@ def one_hot(y,n):
 		y_one_hot[i,int(y[0,i])] = 1
 	return y_one_hot
 
-def nnArc(layers):
+def nnArc(layers, activation_function, netNum):
     '''
     Loading the data set.
     Here 
@@ -47,7 +47,7 @@ def nnArc(layers):
     hidden_layers = list()
 
     for i, layer in enumerate(layers):
-        hidden_layer = tf.contrib.layers.fully_connected(features if i == 0 else hidden_layers[i-1] , 128 , activation_fn = tf.nn.sigmoid)
+        hidden_layer = tf.contrib.layers.fully_connected(features if i == 0 else hidden_layers[i-1] , 128 , activation_fn = activation_function)
         hidden_layers.append(hidden_layer)
     
     '''
@@ -107,8 +107,10 @@ def nnArc(layers):
     You will need to note the test accuracy and generate a plot for architecture vs test accuracy. 
     '''
     print ('Testing accuracy : {}'.format(test_accuracy))
-    '''
+    
     X_axis = range(1,n_epoch + 1 ,10)
+    
+    plt.title( 'NN#{} ({})'.format(netNum, activation_function.__name__) )
     plt.plot(X_axis,train_losses,"-",color = "blue")
     plt.plot(X_axis,test_losses,"--",color = "red")
     plt.legend(["Training Loss","Testing Loss"])
@@ -117,23 +119,47 @@ def nnArc(layers):
     plt.ylabel('Loss')
 
     plt.show()
-    '''
+    
     return (test_accuracy)
 
 #main 
 
 accuracy = list()
 
-accuracy.append( nnArc(list([2048,1024,512,128,32])) )
-accuracy.append( nnArc(list([1024,512,128,64,32])) )
-accuracy.append( nnArc(list([512,256,128,32,16])) )
-accuracy.append( nnArc(list([256,128,32,16,8])) )
-accuracy.append( nnArc(list([128,64,32,16,8])) )
+'''
+# Data for Number 1
+accuracy.append( nnArc(list([2048,1024,512,128,32]), tf.nn.relu, len(accuracy)+1) )
+accuracy.append( nnArc(list([1024,512,128,64,32]), tf.nn.relu, len(accuracy)+1) )
+accuracy.append( nnArc(list([512,256,128,32,16]), tf.nn.relu, len(accuracy)+1) )
+accuracy.append( nnArc(list([256,128,32,16,8]), tf.nn.relu, len(accuracy)+1) )
+accuracy.append( nnArc(list([128,64,32,16,8]), tf.nn.relu, len(accuracy)+1) )
 
-X_axis = range(1, len(accuracy)+1 )
-plt.plot(X_axis,accuracy,"-",color = "blue")
-#plt.legend(["Accuracy","Testing Loss"])
+'''
+'''
+# Data for Number 2
+accuracy.append( nnArc(list([2048]), tf.nn.relu, len(accuracy)+1) )
+accuracy.append( nnArc(list([1024,512]), tf.nn.relu, len(accuracy)+1) )
+accuracy.append( nnArc(list([512,256,128]), tf.nn.relu, len(accuracy)+1) )
+accuracy.append( nnArc(list([256,128,64,32]), tf.nn.relu, len(accuracy)+1) )
+accuracy.append( nnArc(list([256,128,64,32,16]), tf.nn.relu, len(accuracy)+1) )
+'''
 
+# Data for Number 3
+accuracy.append( nnArc(list([(512,256,128,32,16)]), tf.nn.sigmoid, len(accuracy)+1) )
+accuracy.append( nnArc(list([(512,256,128,32,16)]), tf.nn.tanh, len(accuracy)+1) )
+accuracy.append( nnArc(list([(512,256,128,32,16)]), tf.nn.relu, len(accuracy)+1) )
+accuracy.append( nnArc(list([(512,256,128,32,16)]), tf.nn.leaky_relu, len(accuracy)+1) )
+accuracy.append( nnArc(list([(512,256,128,32,16)]), tf.nn.elu, len(accuracy)+1) )
+
+
+X_axis = range(1, len(accuracy) + 1, 1 )
+
+plt.title('Network Accuracy')
+
+plt.plot(X_axis,accuracy,"bo-")
+
+plt.axis([1,len(accuracy), 0, 1])
+plt.xticks(X_axis)
 plt.xlabel('NN#')
 plt.ylabel('Accuracy')
 
